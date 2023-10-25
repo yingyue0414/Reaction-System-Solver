@@ -1,6 +1,9 @@
-# Reaction Kinetics Toolkit
+# Reaction IVP Solver
+This solver provides a set of functions for working with chemical reaction systems, including parsing reaction strings, solving reaction kinetics, and modifying reaction rates. It is written in Python 3.9.7 and utilizes libraries such as NumPy, Matplotlib, and SciPy.
 
-This toolkit provides a set of functions for working with chemical reaction systems, including parsing reaction strings, solving reaction kinetics, and modifying reaction rates. It is written in Python 3.9.7 and utilizes libraries such as NumPy, Matplotlib, and SciPy.
+## WARNING
+The following content of this `README.md` suggests the end goal of this module, not the current progress. Currently, the module is not wrapped to a
+package, but is already able to intepret reaction strings and solve IVP using scipy.
 
 ## Table of Contents
 - [1. Introduction](#introduction)
@@ -15,14 +18,14 @@ This toolkit provides a set of functions for working with chemical reaction syst
 
 ## 1. Introduction <a name="introduction"></a>
 
-The Reaction Kinetics Toolkit is a collection of functions that simplify the handling and analysis of chemical reaction systems. It includes functionalities for parsing reaction strings, generating reactant and product matrices, solving reaction kinetics, and modifying reaction rates.
+The Reaction Kinetics solver is a collection of functions that simplify the handling and analysis of chemical reaction systems. It includes functionalities for parsing reaction strings, generating reactant and product matrices, solving reaction kinetics, and modifying reaction rates.
 
 ## 2. Installation <a name="installation"></a>
 
-No installation is required for this toolkit. Simply include the provided Python script in your project and import the necessary functions as needed.
+No installation is required for this solver. Simply include the provided Python script in your project and import the necessary functions as needed.
 
 ```python
-from reaction_kinetics_toolkit import parse_reaction_string, parse_stoichiometry_string, \
+from reaction_kinetics_solver import parse_reaction_string, parse_stoichiometry_string, \
     extract_species_dictionaries_from_reaction_strings, parse_reaction_strings, \
     calculate_macroscopic_reaction_rates, dydt, dydt_scalar_decorator
 ```
@@ -87,4 +90,4 @@ solmodified = solve_ivp(dydtmodified, t_span, y_initial,
 
 ---
 
-Feel free to explore and adapt the Reaction Kinetics Toolkit to meet your specific needs for chemical reaction analysis. If you have any questions or encounter issues, please refer to the code comments and documentation for additional information.
+Feel free to explore and adapt the Reaction Kinetics solver to meet your specific needs for chemical reaction analysis. If you have any questions or encounter issues, please refer to the code comments and documentation for additional information.
