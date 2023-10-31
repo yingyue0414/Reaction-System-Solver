@@ -1,6 +1,8 @@
 # Reaction IVP Solver
 This solver provides a set of functions for working with chemical reaction systems, including parsing reaction strings, solving reaction kinetics, and modifying reaction rates. It is written in Python 3.9.7 and utilizes libraries such as NumPy, Matplotlib, and SciPy.
 
+Note that the module main serves as a tool to generate the `dydt` function from strings of reactions. The module / method to solve IVP for these `dydt` can be customly defined after such function is generated.
+
 ## WARNING
 The following content of this `README.md` suggests the end goal of this module, not the current progress. Currently, the module is not wrapped to a
 package, but is already able to intepret reaction strings and solve IVP using scipy.
@@ -39,10 +41,11 @@ Use the provided functions to parse reaction strings into their constituent part
 ```python
 # Example usage:
 input_string = "A + 2B -> C, k1"
-reactants, products, rate_constant = parse_reaction_string(input_string)
+reactants, products, rate_constant, direction = parse_reaction_string(input_string)
 print("Reactants:", reactants)  # Output: A + 2B
 print("Products:", products)    # Output: C
 print("Rate Constant:", rate_constant)  # Output: k1
+print("Direction:", direction)   # Output: 1
 ```
 
 ### 3.2. Reaction Matrices <a name="reaction-matrices"></a>
