@@ -12,7 +12,7 @@ package, but is already able to intepret reaction strings and solve IVP using sc
   - [3.1. Parsing Reaction Strings](#parsing-reaction-strings)
   - [3.2. Reaction Matrices](#reaction-matrices)
   - [3.3. Solving Reaction Kinetics](#solving-reaction-kinetics)
-  - [3.4. Modifying Reaction Rates](#modifying-reaction-rates)
+  - [3.4. Modifying the Model wtih Decorators](#decorators)
 
 ---
 
@@ -63,7 +63,8 @@ sol = solve_ivp(dydt, t_span, y_initial, args=(reactant_matrix, product_matrix, 
 
 ### 3.3. Solving Reaction Kinetics <a name="solving-reaction-kinetics"></a>
 
-Utilize the `solve_ivp` function from SciPy to solve the kinetics of a chemical reaction system. Plot the results using Matplotlib.
+In the module, I utilize the `solve_ivp` function from SciPy to solve the kinetics of a chemical reaction system. Plot the results using Matplotlib. However, after constructing the dydt function,
+you can use any method of solving the system of ODEs.
 
 ```python
 t = np.linspace(0, 20, 300)
@@ -75,9 +76,9 @@ plt.legend(np.arange(len(y_initial))
 plt.show()
 ```
 
-### 3.4. Modifying Reaction Rates <a name="modifying-reaction-rates"></a>
+### 3.4. Modifying the Model wtih Decorators <a name="decorators"></a>
 
-Apply a scalar factor to reaction rates using the `dydt_scalar_decorator` function. This allows for the modulation of reaction rates, which can be useful for sensitivity analyses or parameter variations.
+An example usage of a decorator is as follows: assuming we would like to apply a scalar factor (ex. set some concentration to be const) to reaction rates using the `dydt_scalar_decorator` function. This allows for the modulation of reaction rates, which can be useful for sensitivity analyses or parameter variations.
 
 ```python
 scalar = np.array([1.5, 1, 4, 1])  # Scalar values for each rate constant
