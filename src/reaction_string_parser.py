@@ -456,7 +456,13 @@ class ReactionStringParser:
             reactant_matrix (numpy.ndarray): The matrix representing reactants.
             product_matrix (numpy.ndarray): The matrix representing products.
             species_names (list): List of species names.
-            sort_order (list): List of species names in the desired sorting order.
+            sort_order (string, list, or callable):
+                - If a string, options include "alphabetical," "increasing," "decreasing,"
+                  "alphabetical" and "increasing" both use ASCII sequence and "decreasing"
+                  uses reverse ASCII sequence.
+                - If a list, provide a custom list of species names for sorting.
+                - If a callable, sorter_order specifies a key function for custom sorting.
+                  see python sorted() command for more information.
             DEBUG_MODE (bool, optional): Whether to print debug information. Default is False.
 
         Returns:
@@ -498,7 +504,17 @@ class ReactionStringParser:
         """
         # Convert rate_constant_names to a NumPy array
         species_names = np.array(species_names)
-
+        
+        # If the given sort order is a string, generate a sort order list
+        # based on the type of sequence given
+        if isinstance(sort_order, str):
+            if sort_order.casefold() == "alphabetical" or sort_order.casefold() == "increasing":
+                sort_order = sorted(species_names)
+            elif sort_order.casefold() == "decreasing":
+                sort_order = sorted(species_names, reverse=True)
+        elif callable(sort_order):
+            sort_order = sorted(species_names, key = sort_order)
+        
         # Get the indices to sort the rate constants
         sorted_indices = [list(species_names).index(name) for name in sort_order]
 
