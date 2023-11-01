@@ -21,11 +21,11 @@ import numpy as np
 class ReactionStringParser:
     """
     A class for parsing and manipulating chemical reaction strings.
-    
+
     Note:
         If you would like to customize regex for reaction symbols, note that 
         the level of intepretation is reversible > right > left!
-    
+
     Attributes:
         __rightward_reaction_symbol (str, regex): rightward reaction symbol.
         __leftward_reaction_symbol (str, regex): leftward reaction symbol.
@@ -34,16 +34,15 @@ class ReactionStringParser:
         __species_separator (str, regex): species separator.
         __reaction_rate_value_assigner (str, regex): reaction rate value assigner.
         __stoich_species_regex (str, regex): regex pattern for stoichiometry.
-    
+
     Methods:
         parse_reaction_string(reaction_string): Parse a reaction string into components.
         parse_stoichiometry_string(reactants_or_products_string): Parse stoichiometry strings.
         extract_species_dictionaries_from_reaction_strings(reaction_strings): Extract dictionaries and rate constants.
         parse_reaction_strings(reaction_strings, dtype=int, sort_reactions_by=None, sort_species_by=None, VERBOSE_MODE=False): Parse and sort reaction strings.
-        sort_by_rate_constants(reactant_matrix, product_matrix, rate_constant_names, sort_order, DEBUG_MODE=False): Sort matrices based on rate constants.
-        sort_by_species_names(reactant_matrix, product_matrix, species_names, sort_order, DEBUG_MODE=False): Sort matrices based on species names.
+        sort_by_rate_constants(reactant_matrix, product_matrix, rate_constant_names, sort_order ): Sort matrices based on rate constants.
+        sort_by_species_names(reactant_matrix, product_matrix, species_names, sort_order ): Sort matrices based on species names.
     """
-
 
     # Regular expression of all parts
     __DEFAULT_RIGHTWARD_REACTION_SYMBOL = r"-+>"
@@ -51,8 +50,11 @@ class ReactionStringParser:
     __DEFAULT_REVERSIBLE_REACTION_SYMBOL = r"<-+>"
     __DEFAULT_REACTION_RATE_SEPARATOR = r"[,;]"
     __DEFAULT_SPECIES_SEPARATOR = r'\+'
-    __DEFAULT_REACTION_RATE_VALUE_ASSIGNER = "=" # Placeholder
+    __DEFAULT_REACTION_RATE_VALUE_ASSIGNER = "="  # Placeholder
     __DEFAULT_STOICH_SPECIES_REGEX = r"([\d.]+|\d+\s*\/\s*\d+)?\s*(\w+)"
+
+    # Debug mode
+    DEBUG_MODE = False
 
     def __init__(self, **kwargs):
         """
@@ -78,6 +80,8 @@ class ReactionStringParser:
         self.__stoich_species_regex = \
             kwargs.get('stoich_species_regex',
                        self.__DEFAULT_STOICH_SPECIES_REGEX)
+        self.DEBUG_MODE = \
+            kwargs.get("DEBUG_MODE", False)
 
     def parse_reaction_string(self, reaction_string):
         """Parse a reaction string into left-hand-side species, right-hand-side species,
@@ -174,10 +178,9 @@ class ReactionStringParser:
 
     # import re
 
-    def parse_stoichiometry_string(self, reactants_or_products_string, 
-                                   DEBUG_MODE = True):
+    def parse_stoichiometry_string(self, reactants_or_products_string):
         """Parse a stoichiometry string into a stoichiometry dictionary.
-        
+
         Note:
             - species with the same naming will be merged, such as A + 2A -> B will
               be merged into {'A' : 3.0}
@@ -201,10 +204,11 @@ class ReactionStringParser:
             print(stoichiometry)  # Output: {'A': 2, 'B': 1.42857  B, 'C': 0.5}
         """
         # Split the input string into individual reactants by the '+' symbol
-        reactants = re.split(self.__species_separator, reactants_or_products_string)
-        if DEBUG_MODE:
+        reactants = re.split(self.__species_separator,
+                             reactants_or_products_string)
+        if self.DEBUG_MODE:
             print(reactants)
-        
+
         # Initialize an empty dictionary to store the stoichiometry
         stoichiometry_dict = {}
 
@@ -236,9 +240,9 @@ class ReactionStringParser:
                     coefficient = 1.0
 
                 # Update the stoichiometry dictionary with the coefficient and element
-                if element in stoichiometry_dict: # case of repeated species in string
+                if element in stoichiometry_dict:  # case of repeated species in string
                     stoichiometry_dict[element] += coefficient
-                else: # case of new species
+                else:  # case of new species
                     stoichiometry_dict[element] = coefficient
             else:
                 raise ValueError(
@@ -253,11 +257,11 @@ class ReactionStringParser:
         the forward and backward reaction is treated as two separate reactions in
         the system and will be added as two reactions to the reactant and product list
         for the reactions.
-        
+
         Warning:
             A warning message will be output in commandline in case of duplicate rate
             constant naming.
-        
+
         Args:
             reaction_strings (list): List of reaction strings.
 
@@ -280,19 +284,19 @@ class ReactionStringParser:
             # split reaction string into four entries
             left_species, right_species, rate_constant, reaction_direction\
                 = self.parse_reaction_string(reaction_string)
-            
+
             # convert to species-stoichiometry dict for reactant and product
             left_dict = self.parse_stoichiometry_string(left_species)
             right_dict = self.parse_stoichiometry_string(right_species)
-            
+
             # add new names to set
             species_names_set.update(left_dict.keys())
             species_names_set.update(right_dict.keys())
-            
+
             # deal with different direction of reaction
             # forward reaction (going from left to right)
             if reaction_direction >= 0:
-                
+
                 # append dictionaries to the respective lists
                 reactant_dictionaries.append(left_dict)
                 product_dictionaries.append(right_dict)
@@ -300,12 +304,12 @@ class ReactionStringParser:
                 # append rate constant to the list
                 # in case of reversible reaction, rate_constant will be a tuple
                 # and we are taking the first one as forward reaction rate constant
-                rate_constant_names.append(rate_constant[0]\
-                    if isinstance(rate_constant, (list, tuple)) and rate_constant else rate_constant)
+                rate_constant_names.append(rate_constant[0]
+                                           if isinstance(rate_constant, (list, tuple)) and rate_constant else rate_constant)
 
             # backward reaction (going from right to left)
             if reaction_direction <= 0:
-                
+
                 # append dictionaries to the respective lists
                 reactant_dictionaries.append(right_dict)
                 product_dictionaries.append(left_dict)
@@ -313,26 +317,27 @@ class ReactionStringParser:
                 # append rate constant to the list
                 # in case of reversible reaction, rate_constant will be a tuple
                 # and we are taking the first one as forward reaction rate constant
-                rate_constant_names.append(rate_constant[1]\
-                    if isinstance(rate_constant, (list, tuple)) and rate_constant else rate_constant)
+                rate_constant_names.append(rate_constant[1]
+                                           if isinstance(rate_constant, (list, tuple)) and rate_constant else rate_constant)
 
         # duplicate rate constant naming check
-        duplicates = [name for name in rate_constant_names if rate_constant_names.count(name) > 1]
+        duplicates = [
+            name for name in rate_constant_names if rate_constant_names.count(name) > 1]
         if duplicates:
-            print("WARNING: Repeated names found in rate_constant_names:", 
-                set(duplicates), "\n This can lead to ambiguity in ODE definition.",
-                "\n Please consider change the naming.")
+            print("WARNING: Repeated names found in rate_constant_names:",
+                  set(duplicates), "\n This can lead to ambiguity in ODE definition.",
+                  "\n Please consider change the naming.")
 
         return species_names_set, rate_constant_names, reactant_dictionaries, product_dictionaries
 
     def parse_reaction_strings(self, reaction_strings, dtype=int,
-                               sort_reactions_by = None,
-                               sort_species_by = None,
+                               sort_reactions_by=None,
+                               sort_species_by=None,
                                VERBOSE_MODE=False):
         """
         Parse reaction strings into species names, rate constant names, reactant matrices
         and product matrices.
-        
+
         Avoid using dtype = float as long as there is no decimals or fractions
         in stoichiometry is advised.
 
@@ -346,7 +351,7 @@ class ReactionStringParser:
         Returns:
             tuple: A tuple containing species_names (list), rate_constant_names (list),
                 reactant_matrix_array (numpy.ndarray), and product_matrix_array (numpy.ndarray).
-            
+
         Examples:
             # Example usage:
             reaction_strings = ["A + B -> C, kon", "2X -> Y, kf",
@@ -386,10 +391,10 @@ class ReactionStringParser:
         for i in range(num_reactions):
             for species, stoichiometry in reactant_dictionaries[i].items():
                 reactant_matrix[i,
-                                      species_to_index[species]] = stoichiometry
+                                species_to_index[species]] = stoichiometry
             for species, stoichiometry in product_dictionaries[i].items():
                 product_matrix[i,
-                                     species_to_index[species]] = stoichiometry
+                               species_to_index[species]] = stoichiometry
 
         # Sort reactoins by given list of rate constants
         if sort_reactions_by is not None:
@@ -403,31 +408,29 @@ class ReactionStringParser:
         if sort_species_by is not None:
             reactant_matrix, product_matrix, species_names =\
                 self.sort_by_species_names(reactant_matrix,
-                                            product_matrix,
-                                            species_names,
-                                            sort_species_by)
-        
+                                           product_matrix,
+                                           species_names,
+                                           sort_species_by)
+
         return species_names, rate_constant_names, reactant_matrix, product_matrix
 
     def sort_by_rate_constants(self, reactant_matrix, product_matrix,
-                               rate_constant_names, sort_order,
-                               DEBUG_MODE=False):
+                               rate_constant_names, sort_order):
         """
         Sorts reactant and product matrices along with rate constants based on a specified sort order.
         If the given sort_order has entry that is not in rate_constant_names, an error will
         be raised. If the given sort_order does not contain all the entries in rate_constant_names,
         the output will be truncated based on the given sort_order.
-        
+
         Warning:
             The output type after sorting however will be numpy array instead of
             python lists. Numpy array is used to enhance the efficiency of sorting.
-        
+
         Args:
             reactant_matrix (numpy.ndarray): The matrix representing reactants.
             product_matrix (numpy.ndarray): The matrix representing products.
             rate_constant_names (list): List of rate constant names.
             sort_order (list): List of rate constant names in the desired sorting order.
-            DEBUG_MODE (bool, optional): Whether to print debug information. Default is False.
 
         Returns:
             numpy.ndarray: Sorted reactant matrix.
@@ -436,7 +439,7 @@ class ReactionStringParser:
 
         Example:
             Suppose you have the following input matrices and rate constant names:
-            
+
             reactant_matrix = np.array([[1, 2, 3],
                                        [4, 5, 6]])
 
@@ -470,10 +473,11 @@ class ReactionStringParser:
         rate_constant_names = np.array(rate_constant_names)
 
         # Get the indices to sort the rate constants
-        sorted_indices = [list(rate_constant_names).index(name) for name in sort_order]
+        sorted_indices = [list(rate_constant_names).index(name)
+                          for name in sort_order]
 
         # Commandline print if debug mode enabled
-        if DEBUG_MODE:
+        if self.DEBUG_MODE:
             print(sorted_indices)
 
         # Sort the rate constants, reactant_matrix, and product_matrix based on the sorted indices
@@ -482,10 +486,9 @@ class ReactionStringParser:
         sorted_product_matrix = product_matrix[sorted_indices, :]
 
         return sorted_reactant_matrix, sorted_product_matrix, sorted_rate_constants
-    
+
     def sort_by_species_names(self, reactant_matrix, product_matrix,
-                               species_names, sort_order,
-                               DEBUG_MODE=False):
+                              species_names, sort_order):
         """
         Sorts reactant and product matrices along with species names based on a specified sort order.
 
@@ -500,7 +503,7 @@ class ReactionStringParser:
                 - If a list, provide a custom list of species names for sorting.
                 - If a callable, sorter_order specifies a key function for custom sorting.
                   see python sorted() command for more information.
-            DEBUG_MODE (bool, optional): Whether to print debug information. Default is False.
+
 
         Returns:
             numpy.ndarray: Sorted reactant matrix.
@@ -509,7 +512,7 @@ class ReactionStringParser:
 
         Example:
             Suppose you have the following input matrices and species names:
-            
+
             reactant_matrix = np.array([[1, 2, 3],
                                     [4, 5, 6]])
 
@@ -541,7 +544,7 @@ class ReactionStringParser:
         """
         # Convert rate_constant_names to a NumPy array
         species_names = np.array(species_names)
-        
+
         # If the given sort order is a string, generate a sort order list
         # based on the type of sequence given
         if isinstance(sort_order, str):
@@ -550,13 +553,14 @@ class ReactionStringParser:
             elif sort_order.casefold() == "decreasing":
                 sort_order = sorted(species_names, reverse=True)
         elif callable(sort_order):
-            sort_order = sorted(species_names, key = sort_order)
-        
+            sort_order = sorted(species_names, key=sort_order)
+
         # Get the indices to sort the rate constants
-        sorted_indices = [list(species_names).index(name) for name in sort_order]
+        sorted_indices = [list(species_names).index(name)
+                          for name in sort_order]
 
         # Commandline print if debug mode enabled
-        if DEBUG_MODE:
+        if self.DEBUG_MODE:
             print(sorted_indices)
 
         # Sort the rate constants, reactant_matrix, and product_matrix based on the sorted indices
