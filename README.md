@@ -24,12 +24,10 @@ The Reaction Kinetics solver is a collection of functions that simplify the hand
 
 ## 2. Installation <a name="installation"></a>
 
-No installation is required for this solver. Simply include the provided Python script in your project and import the necessary functions as needed.
+No installation is required for this solver. Simply include the provided Python script in your project and import the necessary functions as needed. Example for importing reaction string parser:
 
 ```python
-from reaction_kinetics_solver import parse_reaction_string, parse_stoichiometry_string, \
-    extract_species_dictionaries_from_reaction_strings, parse_reaction_strings, \
-    calculate_macroscopic_reaction_rates, dydt, dydt_scalar_decorator
+from <your_directory>.reaction_string_parser import *
 ```
 
 ## 3. Usage <a name="usage"></a>
