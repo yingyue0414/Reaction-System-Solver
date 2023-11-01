@@ -1,7 +1,16 @@
+#!/usr/bin/env python3.8.10
 """
-Author MYING
-Using Python 3.9.7
+This script contains a class for parsing and
+manipulating chemical reaction strings.
+
+Usage: from <dir>.reaction_string_parser import *
+
+Docstrings and comments are helped written by GPT3.5 and GPT API
+
+@author: MYING
+@email: yying7@jh.edu
 """
+
 import re
 import numpy as np
 
@@ -10,14 +19,39 @@ import numpy as np
 
 
 class ReactionStringParser:
+    """
+    A class for parsing and manipulating chemical reaction strings.
+    
+    Note:
+        If you would like to customize regex for reaction symbols, note that 
+        the level of intepretation is reversible > right > left!
+    
+    Attributes:
+        __rightward_reaction_symbol (str, regex): rightward reaction symbol.
+        __leftward_reaction_symbol (str, regex): leftward reaction symbol.
+        __reversible_reaction_symbol (str, regex): reversible reaction symbol.
+        __reaction_rate_separator (str, regex): reaction rate separator.
+        __species_separator (str, regex): species separator.
+        __reaction_rate_value_assigner (str, regex): reaction rate value assigner.
+        __stoich_species_regex (str, regex): regex pattern for stoichiometry.
+    
+    Methods:
+        parse_reaction_string(reaction_string): Parse a reaction string into components.
+        parse_stoichiometry_string(reactants_or_products_string): Parse stoichiometry strings.
+        extract_species_dictionaries_from_reaction_strings(reaction_strings): Extract dictionaries and rate constants.
+        parse_reaction_strings(reaction_strings, dtype=int, sort_reactions_by=None, sort_species_by=None, VERBOSE_MODE=False): Parse and sort reaction strings.
+        sort_by_rate_constants(reactant_matrix, product_matrix, rate_constant_names, sort_order, DEBUG_MODE=False): Sort matrices based on rate constants.
+        sort_by_species_names(reactant_matrix, product_matrix, species_names, sort_order, DEBUG_MODE=False): Sort matrices based on species names.
+    """
+
 
     # Regular expression of all parts
     __DEFAULT_RIGHTWARD_REACTION_SYMBOL = r"-+>"
     __DEFAULT_LEFTWARD_REACTION_SYMBOL = r"<-+"
     __DEFAULT_REVERSIBLE_REACTION_SYMBOL = r"<-+>"
     __DEFAULT_REACTION_RATE_SEPARATOR = r"[,;]"
-    __DEFAULT_SPECIES_SEPARATOR = '+'
-    __DEFAULT_REACTION_RATE_VALUE_ASSIGNER = "="
+    __DEFAULT_SPECIES_SEPARATOR = r'+'
+    __DEFAULT_REACTION_RATE_VALUE_ASSIGNER = "=" # Placeholder
     __DEFAULT_STOICH_SPECIES_REGEX = r"([\d.]+|\d+\s*\/\s*\d+)?\s*(\w+)"
 
     def __init__(self, **kwargs):
@@ -166,7 +200,7 @@ class ReactionStringParser:
             print(stoichiometry)  # Output: {'A': 2, 'B': 1.42857  B, 'C': 0.5}
         """
         # Split the input string into individual reactants by the '+' symbol
-        reactants = reactants_or_products_string.split('+')
+        reactants = re.split(self.__species_separator, reactants_or_products_string)
 
         # Initialize an empty dictionary to store the stoichiometry
         stoichiometry_dict = {}
