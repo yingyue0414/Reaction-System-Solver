@@ -36,21 +36,92 @@ from reaction_kinetics_solver import parse_reaction_string, parse_stoichiometry_
 
 ### 3.1. Parsing Reaction Strings <a name="parsing-reaction-strings"></a>
 
-Use the provided functions to parse reaction strings into their constituent parts - reactants, products, and rate constants.
+This Python script contains a class for parsing and manipulating chemical reaction strings. The `ReactionStringParser` class provides a range of methods to parse reaction strings, extract species dictionaries and rate constants, and sort reactions and species. To use this script, follow the example usages provided below for various methods of the `ReactionStringParser` class.
+
+#### Import the `ReactionStringParser` class
 
 ```python
-# Example usage:
-input_string = "A + 2B -> C, k1"
-reactants, products, rate_constant, direction = parse_reaction_string(input_string)
-print("Reactants:", reactants)  # Output: A + 2B
-print("Products:", products)    # Output: C
-print("Rate Constant:", rate_constant)  # Output: k1
-print("Direction:", direction)   # Output: 1
+from <dir>.reaction_string_parser import ReactionStringParser
 ```
+
+#### Initialize the `ReactionStringParser` class
+
+```python
+parser = ReactionStringParser()
+```
+
+#### Example 1: Parsing a Reaction String
+
+```python
+reaction_string = "A + 2B -> C, k1"
+left_species, right_species, rate_constant, direction = parser.parse_reaction_string(reaction_string)
+print("Left Species:", left_species)
+print("Right Species:", right_species)
+print("Rate Constant:", rate_constant)
+print("Direction:", direction)
+```
+
+#### Example 2: Parsing a Stoichiometry String
+
+```python
+stoichiometry_string = "A + 1.42857 B + 1/2 C + A"
+stoichiometry = parser.parse_stoichiometry_string(stoichiometry_string)
+print("Stoichiometry:", stoichiometry)
+```
+
+#### Example 3: Extracting Species Dictionaries from Reaction Strings
+
+```python
+reaction_strings = ["A + B -> C, kon", "2X -> Y, kf", "C -> A + B, koff", "Y + A -> X + C, ki"]
+species_names_set, rate_constant_names, reactant_dictionaries, product_dictionaries = parser.extract_species_dictionaries_from_reaction_strings(reaction_strings)
+print("Species Names Set:", species_names_set)
+print("Rate Constant Names:", rate_constant_names)
+print("Reactant Dictionaries:", reactant_dictionaries)
+print("Product Dictionaries:", product_dictionaries)
+```
+
+#### Example 4: Parsing and Sorting Reaction Strings
+
+```python
+reaction_strings = ["A + B -> C, kon", "2X -> Y, kf", "C -> A + B, koff", "Y + A -> X + C, ki"]
+species_names, rate_constant_names, reactant_matrix, product_matrix = parser.parse_reaction_strings(reaction_strings, sort_reactions_by=["ki"], sort_species_by=["C", "A", "Y", "B", "X"])
+print("Species Names:", species_names)
+print("Rate Constant Names:", rate_constant_names)
+print("Reactant Matrix:")
+print(reactant_matrix)
+print("Product Matrix:")
+print(product_matrix)
+```
+
+### Class Details
+
+The `ReactionStringParser` class provides the following attributes and methods:
+
+#### Attributes
+
+- `__rightward_reaction_symbol`: Rightward reaction symbol (default: `-+>`)
+- `__leftward_reaction_symbol`: Leftward reaction symbol (default: `<-+`)
+- `__reversible_reaction_symbol`: Reversible reaction symbol (default: `<-+>`)
+- `__reaction_rate_separator`: Reaction rate separator (default: `,;`)
+- `__species_separator`: Species separator (default: `+`)
+- `__reaction_rate_value_assigner`: Reaction rate value assigner (default: `=`)
+- `__stoich_species_regex`: Regex pattern for stoichiometry (default: `([\d.]+|\d+\s*\/\s*\d+)?\s*(\w+)`)
+- `DEBUG_MODE`: Debug mode (default: False)
+
+#### Methods
+
+- `parse_reaction_string(reaction_string)`: Parse a reaction string into components.
+- `parse_stoichiometry_string(reactants_or_products_string)`: Parse stoichiometry strings.
+- `extract_species_dictionaries_from_reaction_strings(reaction_strings)`: Extract dictionaries and rate constants.
+- `parse_reaction_strings(reaction_strings, dtype=int, sort_reactions_by=None, sort_species_by=None, VERBOSE_MODE=False)`: Parse and sort reaction strings.
+- `sort_by_rate_constants(reactant_matrix, product_matrix, rate_constant_names, sort_order)`: Sort matrices based on rate constants.
+- `sort_by_species_names(reactant_matrix, product_matrix, species_names, sort_order)`: Sort matrices based on species names.
+
+Please refer to the docstrings for each method for detailed explanations and examples.
 
 ### 3.2. Reaction Matrices <a name="reaction-matrices"></a>
 
-Define the reactant and product matrices for a set of reactions and solve the kinetics using the provided functions.
+Define the reactant and product matrices for a set of reactions.
 
 ```python
 # Sample usage:
@@ -59,24 +130,17 @@ y_initial = [3, 10, 7]
 k = [1, 1, 1, 1]
 species_names, reactant_matrix, product_matrix, rate_constant_names = \
     parse_reaction_strings(reaction_strings)
-
-# Solve the kinetics using scipy.integrate.solve_ivp
-sol = solve_ivp(dydt, t_span, y_initial, args=(reactant_matrix, product_matrix, k), dense_output=True)
 ```
 
 ### 3.3. Solving Reaction Kinetics <a name="solving-reaction-kinetics"></a>
 
-In the module, I utilize the `solve_ivp` function from SciPy to solve the kinetics of a chemical reaction system. Plot the results using Matplotlib. However, after constructing the dydt function,
+In the module, I utilize the `solve_ivp` function from SciPy to solve the kinetics of a chemical reaction system. Plot the results using Matplotlib.
+However this is just to showcase the feasbility of solving ODE through constructing matrices. i.e. after constructing the dydt function,
 you can use any method of solving the system of ODEs.
 
 ```python
-t = np.linspace(0, 20, 300)
-y = sol.sol(t)
-plt.plot(t, y.T)
-plt.xlabel('Time')
-plt.ylabel('Concentration')
-plt.legend(np.arange(len(y_initial))
-plt.show()
+# Solve the kinetics using scipy.integrate.solve_ivp
+sol = solve_ivp(dydt, t_span, y_initial, args=(reactant_matrix, product_matrix, k), dense_output=True)
 ```
 
 ### 3.4. Modifying the Model wtih Decorators <a name="decorators"></a>
