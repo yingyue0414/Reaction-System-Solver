@@ -11,7 +11,7 @@ import numpy as np
 
 class ReactionStringParser:
 
-    # The regular expression is @TBD
+    # Regular expression of all parts
     __DEFAULT_RIGHTWARD_REACTION_SYMBOL = r"-+>"
     __DEFAULT_LEFTWARD_REACTION_SYMBOL = r"<-+"
     __DEFAULT_REVERSIBLE_REACTION_SYMBOL = r"<-+>"
@@ -288,7 +288,10 @@ class ReactionStringParser:
 
         return species_names_set, rate_constant_names, reactant_dictionaries, product_dictionaries
 
-    def parse_reaction_strings(self, reaction_strings, VERBOSE_MODE=True, dtype=int):
+    def parse_reaction_strings(self, reaction_strings, dtype=int,
+                               sort_reactions_by = None,
+                               sort_species_by = None,
+                               VERBOSE_MODE=False):
         """
         Parse reaction strings into species names, rate constant names, reactant matrices
         and product matrices.
@@ -298,12 +301,14 @@ class ReactionStringParser:
 
         Args:
             reaction_strings (list): List of reaction strings.
+            dtype (type, optional): Data type for matrix values (default: int).
+            sort_reactions_by (list, optional): List of rate constant names to sort reactions.
+            sort_species_by (list, optional): List of species names to sort species.
             VERBOSE_MODE (bool, optional): If True, print additional information for debugging.
-            dtype (type, optional): Data type for matrix values (default: float).
 
         Returns:
             tuple: A tuple containing species_names (list), rate_constant_names (list),
-            reactant_matrix_array (numpy.ndarray), and product_matrix_array (numpy.ndarray).
+                reactant_matrix_array (numpy.ndarray), and product_matrix_array (numpy.ndarray).
             
         Examples:
             # Example usage:
@@ -331,9 +336,9 @@ class ReactionStringParser:
             print(f"product_dictionaries : {product_dictionaries}")
 
         # Initialize reactant and product matrices
-        reactant_matrix_array = np.zeros(
+        reactant_matrix = np.zeros(
             (num_reactions, num_species), dtype=dtype)
-        product_matrix_array = np.zeros(
+        product_matrix = np.zeros(
             (num_reactions, num_species), dtype=dtype)
 
         # Create a dictionary to map species names to indices
@@ -343,13 +348,29 @@ class ReactionStringParser:
         # Fill in reactant and product matrices
         for i in range(num_reactions):
             for species, stoichiometry in reactant_dictionaries[i].items():
-                reactant_matrix_array[i,
+                reactant_matrix[i,
                                       species_to_index[species]] = stoichiometry
             for species, stoichiometry in product_dictionaries[i].items():
-                product_matrix_array[i,
+                product_matrix[i,
                                      species_to_index[species]] = stoichiometry
 
-        return species_names, rate_constant_names, reactant_matrix_array, product_matrix_array
+        # Sort reactoins by given list of rate constants
+        if sort_reactions_by is not None:
+            reactant_matrix, product_matrix, rate_constant_names =\
+                self.sort_by_rate_constants(reactant_matrix,
+                                            product_matrix,
+                                            rate_constant_names,
+                                            sort_reactions_by)
+
+        # Sort species by given list of species
+        if sort_species_by is not None:
+            reactant_matrix, product_matrix, species_names =\
+                self.sort_by_species_names(reactant_matrix,
+                                            product_matrix,
+                                            species_names,
+                                            sort_species_by)
+        
+        return species_names, rate_constant_names, reactant_matrix, product_matrix
 
     def sort_by_rate_constants(self, reactant_matrix, product_matrix,
                                rate_constant_names, sort_order,
