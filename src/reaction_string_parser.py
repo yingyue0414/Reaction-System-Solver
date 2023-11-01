@@ -50,7 +50,7 @@ class ReactionStringParser:
     __DEFAULT_LEFTWARD_REACTION_SYMBOL = r"<-+"
     __DEFAULT_REVERSIBLE_REACTION_SYMBOL = r"<-+>"
     __DEFAULT_REACTION_RATE_SEPARATOR = r"[,;]"
-    __DEFAULT_SPECIES_SEPARATOR = r'+'
+    __DEFAULT_SPECIES_SEPARATOR = r'\+'
     __DEFAULT_REACTION_RATE_VALUE_ASSIGNER = "=" # Placeholder
     __DEFAULT_STOICH_SPECIES_REGEX = r"([\d.]+|\d+\s*\/\s*\d+)?\s*(\w+)"
 
@@ -174,7 +174,8 @@ class ReactionStringParser:
 
     # import re
 
-    def parse_stoichiometry_string(self, reactants_or_products_string):
+    def parse_stoichiometry_string(self, reactants_or_products_string, 
+                                   DEBUG_MODE = True):
         """Parse a stoichiometry string into a stoichiometry dictionary.
         
         Note:
@@ -201,7 +202,9 @@ class ReactionStringParser:
         """
         # Split the input string into individual reactants by the '+' symbol
         reactants = re.split(self.__species_separator, reactants_or_products_string)
-
+        if DEBUG_MODE:
+            print(reactants)
+        
         # Initialize an empty dictionary to store the stoichiometry
         stoichiometry_dict = {}
 
