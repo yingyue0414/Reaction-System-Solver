@@ -26,10 +26,6 @@ The Reaction Kinetics solver is a collection of functions that simplify the hand
 
 No installation is required for this solver. Simply include the provided Python script in your project and import the necessary functions as needed. Example for importing reaction string parser:
 
-```python
-from <your_directory>.reaction_string_parser import *
-```
-
 ## 3. Usage <a name="usage"></a>
 
 ### 3.1. Parsing Reaction Strings <a name="parsing-reaction-strings"></a>
