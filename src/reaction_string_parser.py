@@ -23,25 +23,41 @@ class ReactionStringParser:
     A class for parsing and manipulating chemical reaction strings.
 
     Note:
+        The string processing gets rid of any whitespaces in the given in the
+        input. Please consider changing whitespaces into underscores '_' in you
+        would like to reserve naming.
+
+    Note:
         If you would like to customize regex for reaction symbols, note that 
         the level of intepretation is reversible > right > left!
 
-    Attributes:
-        __rightward_reaction_symbol (str, regex): rightward reaction symbol.
-        __leftward_reaction_symbol (str, regex): leftward reaction symbol.
-        __reversible_reaction_symbol (str, regex): reversible reaction symbol.
-        __reaction_rate_separator (str, regex): reaction rate separator.
-        __species_separator (str, regex): species separator.
-        __reaction_rate_value_assigner (str, regex): reaction rate value assigner.
-        __stoich_species_regex (str, regex): regex pattern for stoichiometry.
+    Note:
+        By default, all rate constants are required (e.g. a reversible reaction
+        requires)
+
+    Attributes (__init__):
+        rightward_reaction_symbol (str, regex): rightward reaction symbol.
+        leftward_reaction_symbol (str, regex): leftward reaction symbol.
+        reversible_reaction_symbol (str, regex): reversible reaction symbol.
+        reaction_rate_separator (str, regex): reaction rate separator.
+        species_separator (str, regex): species separator.
+        reaction_rate_value_assigner (str, regex): reaction rate value assigner.
+        stoich_species_regex (str, regex): regex pattern for stoichiometry.
+        is_rate_constant_required (bool): when set to False, automatically generate
+                naming for missing rate constant names. Default to True.
 
     Methods:
         parse_reaction_string(reaction_string): Parse a reaction string into components.
         parse_stoichiometry_string(reactants_or_products_string): Parse stoichiometry strings.
-        extract_species_dictionaries_from_reaction_strings(reaction_strings): Extract dictionaries and rate constants.
-        parse_reaction_strings(reaction_strings, dtype=int, sort_reactions_by=None, sort_species_by=None, VERBOSE_MODE=False): Parse and sort reaction strings.
-        sort_by_rate_constants(reactant_matrix, product_matrix, rate_constant_names, sort_order ): Sort matrices based on rate constants.
-        sort_by_species_names(reactant_matrix, product_matrix, species_names, sort_order ): Sort matrices based on species names.
+        extract_species_dictionaries_from_reaction_strings(reaction_strings):
+            Extract dictionaries and rate constants.
+        parse_reaction_strings(reaction_strings, dtype=int,
+                               sort_reactions_by=None, sort_species_by=None, VERBOSE_MODE=False):
+            Parse and sort reaction strings.
+        sort_by_rate_constants(reactant_matrix, product_matrix, rate_constant_names, sort_order ):
+            Sort matrices based on rate constants.
+        sort_by_species_names(reactant_matrix, product_matrix, species_names, sort_order ):
+            Sort matrices based on species names.
     """
 
     # Regular expression of all parts
@@ -52,6 +68,7 @@ class ReactionStringParser:
     __DEFAULT_SPECIES_SEPARATOR = r'\+'
     __DEFAULT_REACTION_RATE_VALUE_ASSIGNER = "="  # Placeholder
     __DEFAULT_STOICH_SPECIES_REGEX = r"([\d.]+|\d+\s*\/\s*\d+)?\s*(\w+)"
+    __DEFAULT_IS_RATE_CONSTANT_REQUIRED = True
 
     # Debug mode
     DEBUG_MODE = False
@@ -80,8 +97,45 @@ class ReactionStringParser:
         self.__stoich_species_regex = \
             kwargs.get('stoich_species_regex',
                        self.__DEFAULT_STOICH_SPECIES_REGEX)
+        self.__is_rate_constant_required = \
+            kwargs.get('__is_rate_constant_required',
+                       self.__DEFAULT_IS_RATE_CONSTANT_REQUIRED)
         self.DEBUG_MODE = \
             kwargs.get("DEBUG_MODE", False)
+
+
+    def __find_direction_and_split_reaction(self, reaction_string):
+        """
+        Search for the symbol indicating reaction direction and split reaction
+        string to two parts by the direction indicating symbol.
+        """
+        # Check if the REVERSIBLE regular expression is contained in the string
+        if re.search(self.__reversible_reaction_symbol, reaction_string):
+            # Split the reaction string by the regular expression
+            reaction_parts = re.split(
+                self.__reversible_reaction_symbol, reaction_string)
+            reaction_direction = 0  # 0 signifies reversible reaction
+
+        # Check if the RIGHTWARD regular expression is contained in the string
+        elif re.search(self.__rightward_reaction_symbol, reaction_string):
+            # Split the reaction string by the regular expression
+            reaction_parts = re.split(
+                self.__rightward_reaction_symbol, reaction_string)
+            reaction_direction = 1  # 1 signifies rightward reaction
+
+        # Check if the LEFTWARD regular expression is contained in the string
+        elif re.search(self.__leftward_reaction_symbol, reaction_string):
+            reaction_parts = re.split(
+                self.__leftward_reaction_symbol, reaction_string)
+            reaction_direction = -1  # -1 signifies leftward reaction
+
+        else:
+            # Handle the case where the regular expression is not found in the string
+            raise ValueError(
+                "The regular expression indicating direction is not in the string." + 
+                  reaction_string
+            )
+        return reaction_direction, reaction_parts
 
     def parse_reaction_string(self, reaction_string):
         """Parse a reaction string into left-hand-side species, right-hand-side species,
@@ -102,8 +156,8 @@ class ReactionStringParser:
 
         Returns:
             tuple: A tuple containing for elements -
-                - left_species (str),
-                - right_species (str),
+                - left_stoich_species (str),
+                - right_stoich_species (str),
                 - rate constant (str or tuple(str) in case of reversible reaction),
                 - reaction_direction (-1, 0, or 1).
                     -1 denotes leftward reaction
@@ -115,39 +169,22 @@ class ReactionStringParser:
 
         Example usage:
             input_string = "A + 2B -> C, k1"
-            left_species, right_species, rate_constant, direction = \
+            left_stoich_species, right_stoich_species, rate_constant, direction = \
                     parse_reaction_string(input_string)
-            print(left_species)
-            print(right_species)  # Output: C
+            print(left_stoich_species)
+            print(right_stoich_species)  # Output: C
         """
-        # Check if the REVERSIBLE regular expression is contained in the string
-        if re.search(self.__reversible_reaction_symbol, reaction_string):
-            # Split the reaction string by the regular expression
-            reaction_parts = re.split(
-                self.__reversible_reaction_symbol, reaction_string)
-            rxn_direction = 0  # 0 signifies reversible reaction
-        # Check if the RIGHTWARD regular expression is contained in the string
-        elif re.search(self.__rightward_reaction_symbol, reaction_string):
-            # Split the reaction string by the regular expression
-            reaction_parts = re.split(
-                self.__rightward_reaction_symbol, reaction_string)
-            rxn_direction = 1  # 1 signifies rightward reaction
-        # Check if the LEFTWARD regular expression is contained in the string
-        elif re.search(self.__leftward_reaction_symbol, reaction_string):
-            reaction_parts = re.split(
-                self.__leftward_reaction_symbol, reaction_string)
-            rxn_direction = -1  # -1 signifies leftward reaction
-        else:
-            # Handle the case where the regular expression is not found in the string
-            print("The regular expression indicating direction is not in the string.")
+        reaction_direction, reaction_parts = \
+            self.__find_direction_and_split_reaction(reaction_string)
 
         if len(reaction_parts) != 2:
             raise ValueError(
                 "Invalid reaction string format: " + reaction_string)
 
         # Extract species on LHS and the second half of the reaction string
-        left_species, second_half_string = reaction_parts[0].strip(
-        ), reaction_parts[1].strip()
+        # .strip() gets rid of whitespaces!
+        left_stoich_species = reaction_parts[0].strip() # stoich-species string on LHS
+        second_half_string = reaction_parts[1].strip() # RHS + rate constants
 
         # Split the second half of the reaction string by reaction_rate_separator
         # (default to ',') to separate products and rate constant
@@ -157,11 +194,13 @@ class ReactionStringParser:
         # Reversible reactions are treated as two separated reactions:
         # one forward and one backward
         # this means we will have two rate constants
-        if rxn_direction == 0:  # reversible reaction
+        if reaction_direction == 0:  # reversible reaction
             if len(second_half_parts) != 3:  # reverisble reactions have two rate constants
-                raise ValueError(
-                    "Invalid reversible reaction string format: " + reaction_string)
-            right_species, rate_constant_forward, rate_constant_backward =\
+                if self.__is_rate_constant_required:
+                    raise ValueError(
+                        "Invalid reversible reaction string format: " + reaction_string)
+
+            right_stoich_species, rate_constant_forward, rate_constant_backward =\
                 [part.strip() for part in second_half_parts[:3]]
             # put the forward and backward constant into a tuple
             rate_constant = (rate_constant_forward, rate_constant_backward)
@@ -171,10 +210,10 @@ class ReactionStringParser:
                 raise ValueError(
                     "Invalid unidirection reaction string format: " + reaction_string)
             # Extract products and rate constant
-            right_species, rate_constant = \
+            right_stoich_species, rate_constant = \
                 [part.strip() for part in second_half_parts[:2]]
 
-        return left_species, right_species, rate_constant, rxn_direction
+        return left_stoich_species, right_stoich_species, rate_constant, reaction_direction
 
     # import re
 
@@ -282,12 +321,12 @@ class ReactionStringParser:
 
         for reaction_string in reaction_strings:
             # split reaction string into four entries
-            left_species, right_species, rate_constant, reaction_direction\
+            left_stoich_species, right_stoich_species, rate_constant, reaction_direction\
                 = self.parse_reaction_string(reaction_string)
 
             # convert to species-stoichiometry dict for reactant and product
-            left_dict = self.parse_stoichiometry_string(left_species)
-            right_dict = self.parse_stoichiometry_string(right_species)
+            left_dict = self.parse_stoichiometry_string(left_stoich_species)
+            right_dict = self.parse_stoichiometry_string(right_stoich_species)
 
             # add new names to set
             species_names_set.update(left_dict.keys())
@@ -467,7 +506,8 @@ class ReactionStringParser:
             # sorted_constants = np.array(['kon', 'koff', 'kf', 'ki'])
 
         Note:
-            This function assumes that the input matrices and rate constant names are compatible and correctly ordered.
+            This function assumes that the input matrices and rate constant names
+            are compatible and correctly ordered.
         """
         # Convert rate_constant_names to a NumPy array
         rate_constant_names = np.array(rate_constant_names)
