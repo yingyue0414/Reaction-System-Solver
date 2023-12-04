@@ -1,4 +1,4 @@
-# Reaction IVP Solver
+# Reaction System Solver
 This solver provides a set of functions for working with chemical reaction systems, including parsing reaction strings, solving reaction kinetics, and modifying reaction rates. It is written in Python 3.9.7 and utilizes libraries such as NumPy, Matplotlib, and SciPy.
 
 Note that the module main serves as a tool to generate the `dydt` function from strings of reactions. The module / method to solve IVP for these `dydt` can be customly defined after such function is generated.
@@ -24,7 +24,7 @@ The Reaction Kinetics solver is a collection of functions that simplify the hand
 
 ## 2. Installation <a name="installation"></a>
 
-No installation is required for this solver. Simply include the provided Python script in your project and import the necessary functions as needed. Example for importing reaction string parser:
+No installation is required for this solver. Simply include the provided Python script in your project and import the necessary functions as needed.
 
 ## 3. Usage <a name="usage"></a>
 
