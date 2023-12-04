@@ -368,7 +368,7 @@ class ReactionStringParser:
 
     def parse_reaction_strings(self, reaction_strings, dtype=int,
                                sort_reactions_by=None,
-                               sort_species_by=None,
+                               sort_species_by="alphabetical",
                                VERBOSE_MODE=False):
         """
         Parse reaction strings into species names, rate constant names, reactant matrices
