@@ -4,3 +4,5 @@ src/.DS_Store
 *.pyc
 *.pyc
 gillespie.ipynb
+.ipynb_checkpoints/gillespie-checkpoint.ipynb
+src/__pycache__/reaction_string_parser.cpython-39.pyc

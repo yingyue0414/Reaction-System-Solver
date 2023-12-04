@@ -41,6 +41,8 @@ class ReactionStringParser:
         stoich_species_regex (str, regex): regex pattern for stoichiometry.
         is_rate_constant_required (bool): when set to False, automatically generate
                 naming for missing rate constant names. Default to True.
+        auto_rate_constant_name (str): automatic generated rate constant name string when
+                naming is missing for rate constants.
 
     Methods:
         parse_reaction_string(reaction_string): Parse a reaction string into components.
@@ -64,7 +66,11 @@ class ReactionStringParser:
     __DEFAULT_SPECIES_SEPARATOR = r'\+'
     __DEFAULT_REACTION_RATE_VALUE_ASSIGNER = "="  # Placeholder
     __DEFAULT_STOICH_SPECIES_REGEX = r"([\d.]+|\d+\s*\/\s*\d+)?\s*(\w+)"
-    __DEFAULT_IS_RATE_CONSTANT_REQUIRED = True
+    __DEFAULT_IS_RATE_CONSTANT_REQUIRED = False
+    __DEFAULT_AUTO_RATE_CONSTANT_NAME = "k"
+    
+    # Controls autoassigning of rate consant name
+    __RATE_CONSTANT_NAME_INDEX = 0
 
     # Debug mode
     DEBUG_MODE = False
@@ -94,8 +100,11 @@ class ReactionStringParser:
             kwargs.get('stoich_species_regex',
                        self.__DEFAULT_STOICH_SPECIES_REGEX)
         self.__is_rate_constant_required = \
-            kwargs.get('__is_rate_constant_required',
+            kwargs.get('is_rate_constant_required',
                        self.__DEFAULT_IS_RATE_CONSTANT_REQUIRED)
+        self.__auto_rate_constant_name = \
+            kwargs.get('auto_rate_constant_name',
+                       self.__DEFAULT_AUTO_RATE_CONSTANT_NAME)
         self.DEBUG_MODE = \
             kwargs.get("DEBUG_MODE", False)
 
@@ -186,7 +195,9 @@ class ReactionStringParser:
         # (default to ',') to separate products and rate constant
         second_half_parts = re.split(
             self.__reaction_rate_separator, second_half_string)
-
+        
+        # If there is no rate constant name and rate constant required set to False
+        # generate rate constant name
         # Reversible reactions are treated as two separated reactions:
         # one forward and one backward
         # this means we will have two rate constants
@@ -195,19 +206,30 @@ class ReactionStringParser:
                 if self.__is_rate_constant_required:
                     raise ValueError(
                         "Invalid reversible reaction string format [psa0]: " + reaction_string)
-
-            right_stoich_species, rate_constant_forward, rate_constant_backward =\
-                [part.strip() for part in second_half_parts[:3]]
+                else: # if rate constant not required, come up with unique naming
+                    right_stoich_species = second_half_parts[0]
+                    rate_constant_forward = self.__auto_rate_constant_name + str(self.__RATE_CONSTANT_NAME_INDEX)
+                    rate_constant_backward = self.__auto_rate_constant_name + str(self.__RATE_CONSTANT_NAME_INDEX + 1)
+                    self.__RATE_CONSTANT_NAME_INDEX += 2
+            else: # regular case where there are two rate constants
+                right_stoich_species, rate_constant_forward, rate_constant_backward =\
+                    [part.strip() for part in second_half_parts[:3]]
             # put the forward and backward constant into a tuple
             rate_constant = (rate_constant_forward, rate_constant_backward)
         # Leftward or rightward reactions
         else:
             if len(second_half_parts) < 2:  # unidirection reactions have one rate constant
-                raise ValueError(
-                    "Invalid unidirection reaction string format [psa1]: " + reaction_string)
-            # Extract products and rate constant
-            right_stoich_species, rate_constant = \
-                [part.strip() for part in second_half_parts[:2]]
+                if self.__is_rate_constant_required:
+                    raise ValueError(
+                        "Invalid unidirection reaction string format [psa1]: " + reaction_string)
+                else: # if rate constant not required, come up with unique naming
+                    right_stoich_species = second_half_parts[0]
+                    rate_constant = self.__auto_rate_constant_name + str(self.__RATE_CONSTANT_NAME_INDEX)
+                    self.__RATE_CONSTANT_NAME_INDEX += 1
+            else: # regular case where there is one rate constant
+                # Extract products and rate constant
+                right_stoich_species, rate_constant = \
+                    [part.strip() for part in second_half_parts[:2]]
 
         return left_stoich_species, right_stoich_species, rate_constant, reaction_direction
 
