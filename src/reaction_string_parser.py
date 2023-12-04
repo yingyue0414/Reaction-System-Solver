@@ -14,10 +14,6 @@ Docstrings and comments are helped written by GPT3.5 and GPT API
 import re
 import numpy as np
 
-# import re
-# Note import re is required for regular expression of strings!
-
-
 class ReactionStringParser:
     """
     A class for parsing and manipulating chemical reaction strings.
@@ -198,7 +194,7 @@ class ReactionStringParser:
             if len(second_half_parts) != 3:  # reverisble reactions have two rate constants
                 if self.__is_rate_constant_required:
                     raise ValueError(
-                        "Invalid reversible reaction string format: " + reaction_string)
+                        "Invalid reversible reaction string format [psa0]: " + reaction_string)
 
             right_stoich_species, rate_constant_forward, rate_constant_backward =\
                 [part.strip() for part in second_half_parts[:3]]
@@ -208,7 +204,7 @@ class ReactionStringParser:
         else:
             if len(second_half_parts) < 2:  # unidirection reactions have one rate constant
                 raise ValueError(
-                    "Invalid unidirection reaction string format: " + reaction_string)
+                    "Invalid unidirection reaction string format [psa1]: " + reaction_string)
             # Extract products and rate constant
             right_stoich_species, rate_constant = \
                 [part.strip() for part in second_half_parts[:2]]
@@ -284,8 +280,9 @@ class ReactionStringParser:
                 else:  # case of new species
                     stoichiometry_dict[element] = coefficient
             else:
-                raise ValueError(
-                    f"Invalid reactant or product format: {reactant}")
+                if re.search(r'\S', reactant):
+                    raise ValueError(
+                        f"Invalid reactant or product format: {reactant}")
 
         return stoichiometry_dict
 

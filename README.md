@@ -28,6 +28,50 @@ No installation is required for this solver. Simply include the provided Python 
 
 ## 3. Usage <a name="usage"></a>
 
+
+
+Here is a concise summary of the provided Python script:
+
+
+### ReactionStringParser Class Documentation
+
+This script contains a Python class, `ReactionStringParser`, designed for parsing and manipulating chemical reaction strings.
+
+#### Usage
+```python
+from <dir>.reaction_string_parser import *
+```
+
+#### Class Attributes
+- `rightward_reaction_symbol`: Rightward reaction symbol (default: "-+>")
+- `leftward_reaction_symbol`: Leftward reaction symbol (default: "<-+")
+- `reversible_reaction_symbol`: Reversible reaction symbol (default: "<-+>")
+- `reaction_rate_separator`: Reaction rate separator (default: "[,;]")
+- `species_separator`: Species separator (default: '\+')
+- `reaction_rate_value_assigner`: Reaction rate value assigner (default: "=")
+- `stoich_species_regex`: Regex pattern for stoichiometry (default: "([\d.]+|\d+\s*\/\s*\d+)?\s*(\w+)")
+- `is_rate_constant_required`: Boolean indicating if rate constants are required (default: True)
+
+#### Class Methods
+- `parse_reaction_string(reaction_string)`: Parse a reaction string into components.
+- `parse_stoichiometry_string(reactants_or_products_string)`: Parse stoichiometry strings.
+- `extract_species_dictionaries_from_reaction_strings(reaction_strings)`: Extract dictionaries and rate constants.
+- `parse_reaction_strings(reaction_strings, dtype=int, sort_reactions_by=None, sort_species_by=None, VERBOSE_MODE=False)`: Parse and sort reaction strings.
+- `sort_by_rate_constants(reactant_matrix, product_matrix, rate_constant_names, sort_order)`: Sort matrices based on rate constants.
+- `sort_by_species_names(reactant_matrix, product_matrix, species_names, sort_order)`: Sort matrices based on species names.
+
+#### Example Usage
+```python
+reaction_strings = ["A + B -> C, kon", "2X -> Y, kf", "C -> A + B, koff", "Y + A -> X + C, ki"]
+parser = ReactionStringParser()
+species_names, rate_constant_names, reactant_matrix, product_matrix = parser.parse_reaction_strings(reaction_strings)
+```
+
+Note: Detailed method descriptions and examples are provided in the docstrings within the script.
+
+
+
+
 ### 3.1. Parsing Reaction Strings <a name="parsing-reaction-strings"></a>
 
 This Python script contains a class for parsing and manipulating chemical reaction strings. The `ReactionStringParser` class provides a range of methods to parse reaction strings, extract species dictionaries and rate constants, and sort reactions and species. To use this script, follow the example usages provided below for various methods of the `ReactionStringParser` class.
