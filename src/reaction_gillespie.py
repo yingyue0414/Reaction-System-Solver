@@ -54,7 +54,8 @@ def convert_to_microscopic_rate_constants(macroscopic_rate_constants, reactant_m
 
     return microscopic_rate_constants
 
-def calculate_propensity(y, reactant_matrix, microscopic_rate_constants):
+def calculate_propensity(y, reactant_matrix, microscopic_rate_constants,
+                        previous_propensities = None, is_propensity_update_needed = None):
     """
     Calculate propensities for Gillespie algorithm.
 
@@ -85,26 +86,42 @@ def calculate_propensity(y, reactant_matrix, microscopic_rate_constants):
         Propensity is the product of the microscopic rate constant and combinatorial terms
         based on the reactant matrix and current state (y) of the system.
     """
-    if not np.all(np.mod(reactant_matrix, 1) == 0):
-        raise ValueError("For gillespie, all entries in the matrix must be mathematically integers.")
+    
+    if previous_propensities is None: # simple case
         
-    propensities = np.zeros(len(reactant_matrix))
+        propensities = np.zeros(len(reactant_matrix))
 
-    # Loop over each reaction
-    for reaction_index, reaction in enumerate(reactant_matrix):
-        propensity = microscopic_rate_constants[reaction_index]
+        # Loop over each reaction
+        for reaction_index, reaction in enumerate(reactant_matrix):
+            propensity = microscopic_rate_constants[reaction_index]
 
-        # Multiply by the combinatorial term for each reactant
-        for species_index, species_count in enumerate(reaction):
-            propensity *= math.comb(y[species_index], species_count)
+            # Multiply by the combinatorial term for each reactant
+            for species_index, species_count in enumerate(reaction):
+                propensity *= math.comb(y[species_index], species_count)
 
-        propensities[reaction_index] = propensity
+            propensities[reaction_index] = propensity
+        
+        return propensities
 
-    return propensities
+    else: # optimization case
+        # Loop over each reaction
+        for reaction_index, reaction in enumerate(reactant_matrix):
+            if is_propensity_update_needed[reaction_index] != 0:
+                # Update propensity if entry is not zero
+                propensity = microscopic_rate_constants[reaction_index]
+
+                # Multiply by the combinatorial term for each reactant
+                for species_index, species_count in enumerate(reaction):
+                    propensity *= math.comb(y[species_index], species_count)
+                
+                previous_propensities[reaction_index] = propensity
+            
+        return previous_propensities
 
 
 def gillespie_simulation(max_time, y_init,
-                         reactant_matrix, product_matrix, microscopic_rate_constants):
+                         reactant_matrix, product_matrix, microscopic_rate_constants,
+                         full_update_scheme = True):
     """
     Perform Gillespie simulation for a chemical reaction system.
 
@@ -114,6 +131,7 @@ def gillespie_simulation(max_time, y_init,
         reactant_matrix (numpy.ndarray): Matrix representing reactants in each reaction.
         product_matrix (numpy.ndarray): Matrix representing products in each reaction.
         microscopic_rate_constants (numpy.ndarray): Rate constants for each reaction.
+        full_update_scheme (bool): controls if update every propensity entry in each iteration.
 
     Returns:
         tuple: A tuple containing arrays for recorded time points (t_record) and
@@ -143,25 +161,52 @@ def gillespie_simulation(max_time, y_init,
         This function performs a Gillespie simulation for a chemical reaction system.
         It records the system state and corresponding time points during the simulation.
     """
-    time = 0.0
+    if not np.all(np.mod(reactant_matrix, 1) == 0):
+        raise ValueError("For gillespie, all entries in the reactant matrix must be mathematically integers.")
+    
+    if not np.all(np.mod(product_matrix, 1) == 0):
+        raise ValueError("For gillespie, all entries in the product matrix must be mathematically integers.")
+    
+    time = 0.0 # Simulation time elapsed
     y = y_init  # Initial copy numbers
-    propensities = np.zeros(len(reactant_matrix))  # Propensities array
+    propensities = calculate_propensity(y, reactant_matrix, microscopic_rate_constants)  # Propensities array
+
+    is_propensity_update_needed = np.zeros(len(reactant_matrix)) # 1 for updated needed
     delta_y = product_matrix - reactant_matrix  # Yield matrix
     index = np.array(range(0, len(reactant_matrix)))  # np.random.choice must be 1-d array; use indexing instead
-    y_record = [np.copy(y)]  # Record copy numbers
-    t_record = [time]  # Record time
+    y_record = [np.copy(y)]  # Record array for copy numbers
+    t_record = [time]  # Record array for time
 
     while time < max_time:  # Control simulation time scale
-        # Calculate propensity
-        propensities = calculate_propensity(y, reactant_matrix, microscopic_rate_constants)
-
+        
+        if full_update_scheme:
+        
+            # Calculate propensity
+            propensities = calculate_propensity(y, reactant_matrix, microscopic_rate_constants)
+        
+        else:
+            
+            # Calculate propensity
+            propensities = calculate_propensity(y, reactant_matrix, microscopic_rate_constants,
+                                               propensities, is_propensity_update_needed)
+        
         # Calculate r_tot and sojourn time
         r_tot = np.sum(propensities)
         tau = - (1.0 / r_tot) * np.log(np.random.rand())
 
-        # Add to species
-        y += delta_y[np.random.choice(index, p=propensities / r_tot)]
+        # Choose reaction and add to species
+        reaction_index_chose = np.random.choice(index, p=propensities / r_tot)
+        y += delta_y[reaction_index_chose]
+        
+        
+        # Update which propensities need to be updated in next iteration
+        if not full_update_scheme:
+            ##@deprecated: entries_changed = np.abs(np.transpose(delta_y[[reaction_index_chose]]))
+            ##@deprecated: is_propensity_update_needed = np.squeeze(np.matmul(reactant_matrix, entries_changed))
+            entries_changed = np.abs(delta_y[reaction_index_chose].T)
+            is_propensity_update_needed = np.dot(reactant_matrix, entries_changed.squeeze())
 
+            
         # Progress time
         time += tau
 
