@@ -15,6 +15,7 @@ package, but is already able to intepret reaction strings and solve IVP using sc
   - [3.2. Reaction Matrices](#reaction-matrices)
   - [3.3. Solving Reaction Kinetics](#solving-reaction-kinetics)
   - [3.4. Modifying the Model wtih Decorators](#decorators)
+  - [3.5. Gillespie](#gillespie)
 
 ---
 
@@ -197,3 +198,81 @@ solmodified = solve_ivp(dydtmodified, t_span, y_initial,
 ---
 
 Feel free to explore and adapt the Reaction Kinetics solver to meet your specific needs for chemical reaction analysis. If you have any questions or encounter issues, please refer to the code comments and documentation for additional information.
+
+
+Certainly! Here's the added section about the Gillespie algorithm:
+
+
+
+### 3.5. Gillespie Algorithm Simulation <a name="gillespie-algorithm"></a>
+
+The Gillespie algorithm is a stochastic simulation algorithm used to model the time evolution of chemical reaction systems. It is particularly useful for systems with low reactant counts and when stochastic effects play a significant role. The `gillespie_simulation` function provided in `src.reaction_gillespie` module (src/reaction_gillespie.py) allows you to perform Gillespie simulations for a given chemical reaction system. `convert_to_microscopic_rate_constants` enables automatic conversion between microscopic and macroscopic rate constant (assuming concentration in M and volume in L).
+
+#### Function Signature
+
+```python
+def gillespie_simulation(max_time, y_init, reactant_matrix, product_matrix, microscopic_rate_constants, full_update_scheme=True):
+    """
+    Perform Gillespie simulation for a chemical reaction system.
+
+    Args:
+        max_time (float): Maximum simulation time.
+        y_init (numpy.ndarray): Initial state of the system (species counts).
+        reactant_matrix (numpy.ndarray): Matrix representing reactants in each reaction.
+        product_matrix (numpy.ndarray): Matrix representing products in each reaction.
+        microscopic_rate_constants (numpy.ndarray): Rate constants for each reaction.
+        full_update_scheme (bool): Controls if update every propensity entry in each iteration.
+
+    Returns:
+        tuple: A tuple containing arrays for recorded time points (t_record) and
+               corresponding system states (y_record).
+
+    Example:
+        Suppose you have the following input matrices and arrays:
+
+        max_time = 100.0
+        y_init = np.array([10, 5, 3])  # Initial state (species counts)
+
+        reactant_matrix = np.array([[2, 1, 0],  # Example reactant matrix
+                                    [0, 1, 1]])
+
+        product_matrix = np.array([[0, 1, 0],  # Example product matrix
+                                   [1, 0, 1]])
+
+        microscopic_rate_constants = np.array([0.1, 0.05])  # Example rate constants
+
+        y_record, t_record = gillespie_simulation(max_time, y_init,
+                                                   reactant_matrix, product_matrix,
+                                                   microscopic_rate_constants)
+        print(y_record)
+        print(t_record)
+        
+    Note:
+        This function performs a Gillespie simulation for a chemical reaction system.
+        It records the system state and corresponding time points during the simulation.
+    """
+```
+
+#### Example Usage
+
+```python
+max_time = 100.0
+y_init = np.array([10, 5, 3])  # Initial state (species counts)
+
+reactant_matrix = np.array([[2, 1, 0],  # Example reactant matrix
+                            [0, 1, 1]])
+
+product_matrix = np.array([[0, 1, 0],  # Example product matrix
+                           [1, 0, 1]])
+
+microscopic_rate_constants = np.array([0.1, 0.05])  # Example rate constants
+
+y_record, t_record = gillespie_simulation(max_time, y_init,
+                                           reactant_matrix, product_matrix,
+                                           microscopic_rate_constants)
+print(y_record)
+print(t_record)
+```
+
+Feel free to use the `gillespie_simulation` function to explore the stochastic behavior of your chemical reaction system. Adjust the input parameters as needed for your specific simulation requirements.
+```
