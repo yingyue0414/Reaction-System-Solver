@@ -8,8 +8,6 @@ import matplotlib.pyplot as plt
 from matplotlib import rcParams
 # figure size in inches
 rcParams['figure.figsize'] = 11,8
-import seaborn as sns
-sns.set_context("talk")
 
 from scipy.integrate import solve_ivp
 
@@ -78,7 +76,7 @@ def dydt(t, y, reactant_matrix, product_matrix, k):
     return dydt
 
 def solve_reaction_ode(dydt, t_span, y_initial, reactant_matrix, product_matrix, k,
-                       sample_plot=True, plotting_sample_points=1000):
+                       sample_plot=True, plotting_sample_points=1000, species_names = None):
     """
     Solve a system of ordinary differential equations (ODEs) for a chemical reaction and optionally plot the results.
 
@@ -103,5 +101,8 @@ def solve_reaction_ode(dydt, t_span, y_initial, reactant_matrix, product_matrix,
     plt.plot(t, y.T)
     plt.xlabel('time')
     plt.ylabel('concentration')
-    plt.legend([f"y{i}" for i in range(len(y_initial))])
+    if species_names is None:
+        plt.legend([f"y{i}" for i in range(len(y_initial))])
+    else:
+        plt.legend(species_names)
     plt.show()
