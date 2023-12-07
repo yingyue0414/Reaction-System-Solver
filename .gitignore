@@ -8,3 +8,4 @@ gillespie.ipynb
 src/__pycache__/reaction_string_parser.cpython-39.pyc
 *.pyc
 .ipynb_checkpoints/gillespie-checkpoint.ipynb
+.ipynb_checkpoints/example-checkpoint.ipynb

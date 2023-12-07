@@ -77,12 +77,13 @@ def dydt(t, y, reactant_matrix, product_matrix, k):
 
     return dydt
 
-def solve_reaction_ode(t_span, y_initial, reactant_matrix, product_matrix, k,
+def solve_reaction_ode(dydt, t_span, y_initial, reactant_matrix, product_matrix, k,
                        sample_plot=True, plotting_sample_points=1000):
     """
     Solve a system of ordinary differential equations (ODEs) for a chemical reaction and optionally plot the results.
 
     Parameters:
+    - dydt (function): the target function representing the system of reactions
     - t_span (tuple): A tuple specifying the time span (initial and final times) for integration.
     - y_initial (array-like): The initial concentrations of species.
     - reactant_matrix (array-like): The matrix representing the stoichiometry of reactants in each reaction.
@@ -102,5 +103,5 @@ def solve_reaction_ode(t_span, y_initial, reactant_matrix, product_matrix, k,
     plt.plot(t, y.T)
     plt.xlabel('time')
     plt.ylabel('concentration')
-    plt.legend([f"y{i}" for i in range(len(y_initial)])
+    plt.legend([f"y{i}" for i in range(len(y_initial))])
     plt.show()
