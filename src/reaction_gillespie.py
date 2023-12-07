@@ -121,7 +121,7 @@ def calculate_propensity(y, reactant_matrix, microscopic_rate_constants,
 
 def gillespie_simulation(max_time, y_init,
                          reactant_matrix, product_matrix, microscopic_rate_constants,
-                         full_update_scheme = True):
+                         full_update_scheme = False):
     """
     Perform Gillespie simulation for a chemical reaction system.
 
