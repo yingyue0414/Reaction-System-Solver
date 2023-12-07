@@ -204,7 +204,7 @@ Certainly! Here's the added section about the Gillespie algorithm:
 
 
 
-### 3.5. Gillespie Algorithm Simulation <a name="gillespie-algorithm"></a>
+### 3.5. Gillespie Algorithm Simulation <a name="gillespie"></a>
 
 The Gillespie algorithm is a stochastic simulation algorithm used to model the time evolution of chemical reaction systems. It is particularly useful for systems with low reactant counts and when stochastic effects play a significant role. The `gillespie_simulation` function provided in `src.reaction_gillespie` module (src/reaction_gillespie.py) allows you to perform Gillespie simulations for a given chemical reaction system. `convert_to_microscopic_rate_constants` enables automatic conversion between microscopic and macroscopic rate constant (assuming concentration in M and volume in L).
 
