@@ -221,32 +221,12 @@ def gillespie_simulation(max_time, y_init, reactant_matrix, product_matrix, micr
         reactant_matrix (numpy.ndarray): Matrix representing reactants in each reaction.
         product_matrix (numpy.ndarray): Matrix representing products in each reaction.
         microscopic_rate_constants (numpy.ndarray): Rate constants for each reaction.
-        full_update_scheme (bool): Controls if update every propensity entry in each iteration.
+        full_update_scheme (bool): Controls if update every propensity entry in each iteration. If
+                set to False, optimize the simulation so that not every propensity will be updated each step.
 
     Returns:
         tuple: A tuple containing arrays for recorded time points (t_record) and
                corresponding system states (y_record).
-
-    Example:
-        Suppose you have the following input matrices and arrays:
-
-        max_time = 100.0
-        y_init = np.array([10, 5, 3])  # Initial state (species counts)
-
-        reactant_matrix = np.array([[2, 1, 0],  # Example reactant matrix
-                                    [0, 1, 1]])
-
-        product_matrix = np.array([[0, 1, 0],  # Example product matrix
-                                   [1, 0, 1]])
-
-        microscopic_rate_constants = np.array([0.1, 0.05])  # Example rate constants
-
-        y_record, t_record = gillespie_simulation(max_time, y_init,
-                                                   reactant_matrix, product_matrix,
-                                                   microscopic_rate_constants)
-        print(y_record)
-        print(t_record)
-        
     Note:
         This function performs a Gillespie simulation for a chemical reaction system.
         It records the system state and corresponding time points during the simulation.
