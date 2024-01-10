@@ -23,9 +23,15 @@ package, but is already able to intepret reaction strings and solve IVP using sc
 
 The Reaction Kinetics solver is a collection of functions that simplify the handling and analysis of chemical reaction systems. It includes functionalities for parsing reaction strings, generating reactant and product matrices, solving reaction kinetics, and modifying reaction rates.
 
-## 2. Installation <a name="installation"></a>
+## 2. Installation ande dependency <a name="installation"></a>
 
 No installation is required for this solver. Simply include the provided Python script in your project and import the necessary functions as needed.
+
+### 2.1. Dependency
+
+- Numpy
+- Matplotlib
+- Scipy (default solver in `odesolver` module)
 
 ## 3. Usage <a name="usage"></a>
 

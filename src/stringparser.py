@@ -628,3 +628,21 @@ class ReactionStringParser:
         sorted_product_matrix = product_matrix[:, sorted_indices]
 
         return sorted_reactant_matrix, sorted_product_matrix, sorted_species_names
+    
+    def reset_rate_constant_autonumbering(self):
+        """Reset the autonumbering index for rate constant names.
+
+        This method resets the internal index used for autonumbering rate constant names
+        in the ReactionStringParser class. The autonumbering index is used to generate
+        unique names for rate constants when they are not provided in the input.
+
+        Example:
+            parser = ReactionStringParser()
+            parser.reset_rate_constant_autonumbering()
+
+        Note:
+            After calling this method, the next autonumbered rate constant name generated
+            will start from 0.
+
+        """
+        self.__RATE_CONSTANT_NAME_INDEX = 0

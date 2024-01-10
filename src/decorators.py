@@ -1,6 +1,9 @@
 """
 Author MYING
 Using Python 3.9.7
+
+This is example of a decorator that you can apply to modify the ODE system
+in a top-down way.
 """
 import numpy as np
 
