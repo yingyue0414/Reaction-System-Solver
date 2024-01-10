@@ -253,6 +253,6 @@ print(t_record)
 
 Feel free to use the `gillespie_simulation` function to explore the stochastic behavior of your chemical reaction system. Adjust the input parameters as needed for your specific simulation requirements.
 
-## 4. Testing <a name="introduction"></a>
+## 4. Testing <a name="testing"></a>
 
 Unit test is written with `pytest6.2.4`. Run all tests in main directory with command `pytest`. 
