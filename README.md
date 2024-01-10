@@ -16,7 +16,7 @@ package, but is already able to intepret reaction strings and solve IVP using sc
   - [3.3. Solving Reaction Kinetics](#solving-reaction-kinetics)
   - [3.4. Modifying the Model wtih Decorators](#decorators)
   - [3.5. Gillespie](#gillespie)
-- [4. Testing] (#testing)
+- [4. Testing](#testing)
 
 ---
 
