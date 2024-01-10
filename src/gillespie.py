@@ -121,6 +121,7 @@ def calculate_propensity(y, reactant_matrix, microscopic_rate_constants,
 
 def gillespie_simulation(max_time, y_init,
                          reactant_matrix, product_matrix, microscopic_rate_constants,
+                         record_interval = 1,
                          full_update_scheme = False):
     """
     Perform Gillespie simulation for a chemical reaction system.
@@ -176,6 +177,7 @@ def gillespie_simulation(max_time, y_init,
     index = np.array(range(0, len(reactant_matrix)))  # np.random.choice must be 1-d array; use indexing instead
     y_record = [np.copy(y)]  # Record array for copy numbers
     t_record = [time]  # Record array for time
+    n_steps = 0 # Record every record_interval step(s)
 
     while time < max_time:  # Control simulation time scale
         
@@ -206,12 +208,13 @@ def gillespie_simulation(max_time, y_init,
             entries_changed = np.abs(delta_y[reaction_index_chose].T)
             is_propensity_update_needed = np.dot(reactant_matrix, entries_changed.squeeze())
 
-            
         # Progress time
         time += tau
 
         # Record
-        y_record.append(np.copy(y))
-        t_record.append(time)
+        if n_steps % record_interval == 0:
+            y_record.append(np.copy(y))
+            t_record.append(time)
+        n_steps += 1
 
     return y_record, t_record
